@@ -1,0 +1,1 @@
+'canvaslms' is a Python package that aims to be a simple binding for Instructure's Canvas LMS API.
