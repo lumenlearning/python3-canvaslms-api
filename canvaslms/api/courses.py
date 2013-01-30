@@ -1,5 +1,3 @@
-###############################################################################
-# python3-canvaslms-api Source Code
 # Copyright (C) 2013 Lumen LLC.
 #
 # This file is part of the python3-canvaslms-api module Source Code.
@@ -17,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
+
+from canvaslms import CanvasAPI, getResponseBody
 
 class Course:
     @property
@@ -63,3 +63,15 @@ class Course:
     def needs_grading_count(self):
         return self.needs_grading_count
 
+def listCourses(enrollment_type=None, enrollment_role=None, include=None, APIInstance=None):
+    # use default instance
+    if APIInstance == None:
+        if CanvasAPI.INSTANCE == None:
+            raise ValueError('Argument \'APIInstance\' must be specified if canvaslms.setInstance was not run.')
+        APIInstance = CanvasAPI.INSTANCE
+
+    resp = APIInstance.callAPI('courses')
+    respBody = getResponseBody(resp)
+
+    return respBody
+    
