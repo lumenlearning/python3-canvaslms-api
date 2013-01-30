@@ -33,13 +33,13 @@ class CanvasAPI:
     def callAPI(self, url, server=None, authToken=None):
         if server == None:
             if self._defaultServer == None:
-                raise ValueError('callAPI: Argument \'server\' must be specified if \'defaultServer\' was not specified during CanvasAPI object initialization.')
+                raise ValueError('Argument \'server\' must be specified if \'defaultServer\' was not specified during CanvasAPI object initialization.')
             else:
                 server = self._defaultServer
 
         if authToken == None:
             if self._defaultAuthToken == None:
-                raise ValueError('callAPI: Argument \'authToken\' must be specified if \'defaultAuthToken\' was not specified during CanvasAPI object initialization.')
+                raise ValueError('Argument \'authToken\' must be specified if \'defaultAuthToken\' was not specified during CanvasAPI object initialization.')
             else:
                 authToken = self._defaultAuthToken
 
