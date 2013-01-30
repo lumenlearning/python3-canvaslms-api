@@ -22,15 +22,20 @@ from urllib.request import Request, urlopen
 import json
 import re
 
+# Some regexes for dealing with HTTP responses from API
 JSON_PATTERN = re.compile(r'application/json', re.I)
 CHARSET_PATTERN = re.compile(r'charset=(.+?)(;|$)')
 
 class CanvasAPI:
-    def __init__(self, defaultServer=None, defaultAuthToken=None):
+    # static variable to reference a default instance of this class
+    INSTANCE = None
+
+    def __init__(self, defaultServer=None, defaultAuthToken=None, defaultVersion='v1'):
         self._defaultServer = defaultServer
         self._defaultAuthToken = defaultAuthToken
+        self._defaultVersion = defaultVersion
 
-    def callAPI(self, url, server=None, authToken=None):
+    def callAPI(self, url, server=None, authToken=None, version=None):
         if server == None:
             if self._defaultServer == None:
                 raise ValueError('Argument \'server\' must be specified if \'defaultServer\' was not specified during CanvasAPI object initialization.')
@@ -43,7 +48,14 @@ class CanvasAPI:
             else:
                 authToken = self._defaultAuthToken
 
-        req = Request(url='https://{}/api/v1/{}'.format(server, url), headers={'Authorization':' Bearer {}'.format(authToken)})
+        if version  == None:
+            if self._defaultVersion == None:
+                raise ValueError('Argument \'version\' must not be None.')
+            else:
+                version = self._defaultVersion
+
+
+        req = Request(url='https://{}/api/{}/{}'.format(server, version, url), headers={'Authorization':' Bearer {}'.format(authToken)})
         return urlopen(req)
 
 def checkJSON(resp):
@@ -65,3 +77,6 @@ def getResponseBody(resp):
         respBody = json.loads(respBody)
         
     return respBody
+
+def setInstance(server, authToken):
+    CanvasAPI.INSTANCE = CanvasAPI(server, authToken)
