@@ -1,3 +1,4 @@
+###############################################################################
 # Copyright (C) 2013 Lumen LLC.
 #
 # This file is part of the python3-canvaslms-api module Source Code.
@@ -16,9 +17,26 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
-from canvaslms import CanvasAPI, getResponseBody
+
+import canvaslms.api
+
+class Courses:
+    'Class providing access to all course-related API endpoints.'
+    def __init__(self, connector):
+        self._connector = connector
+
+    def getCourses(self, enrollment_type=None, enrollment_role=None, include=None):
+        if self._connector == None:
+            raise ValueError('Property \'_connector\' must be specified prior to calling this function.')
+
+        resp = self._connector.callAPI('courses')
+        respBody = canvaslms.api.getResponseBody(resp)
+
+        return respBody
 
 class Course:
+    'Class representing one course object as returned by the API'
+
     @property
     def id(self):
         return self.id
@@ -63,15 +81,3 @@ class Course:
     def needs_grading_count(self):
         return self.needs_grading_count
 
-def listCourses(enrollment_type=None, enrollment_role=None, include=None, APIInstance=None):
-    # use default instance
-    if APIInstance == None:
-        if CanvasAPI.INSTANCE == None:
-            raise ValueError('Argument \'APIInstance\' must be specified if canvaslms.setInstance was not run.')
-        APIInstance = CanvasAPI.INSTANCE
-
-    resp = APIInstance.callAPI('courses')
-    respBody = getResponseBody(resp)
-
-    return respBody
-    
