@@ -21,51 +21,99 @@
 class User:
     @property
     def id(self):
-        return self.id
+        return self._id
+    @id.setter
+    def id(self, value):
+        self._id = value
 
     @property
     def name(self):
-        return self.name
+        return self._name
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
     def sortable_name(self):
-        return self.sortable_name
+        return self._sortable_name
+    @sortable_name.setter
+    def sortable_name(self, value):
+        self._sortable_name = value
 
     @property
     def short_name(self):
-        return self.short_name
+        return self._short_name
+    @short_name.setter
+    def short_name(self, value):
+        self._short_name = value
 
     @property
     def sis_user_id(self):
-        return self.sis_user_id
-
+        return self._sis_user_id
+    @sis_user_id.setter
+    def sis_user_id(self, value):
+        self._sis_user_id = value
 
     # DEPRECATED
     @property
     def sis_login_id(self):
-        return self.sis_login_id
+        return self._sis_login_id
+    @sis_login_id.setter
+    def sis_login_id(self, value):
+        self._sis_login_id = value
 
     @property
     def login_id(self):
-        return self.login_id
+        return self._login_id
+    @login_id.setter
+    def login_id(self, value):
+        self._login_id = value
 
     @property
     def avatar_url(self):
-        return self.avatar_url
+        return self._avatar_url
+    @avatar_url.setter
+    def avatar_url(self, value):
+        self._avatar_url = value
 
     @property
     def enrollments(self):
-        return self.enrollments
+        return self._enrollments
+    @enrollments.setter
+    def enrollments(self, value):
+        self._enrollments = value
 
     @property
     def email(self):
-        return self.email
+        return self._email
+    @email.setter
+    def email(self, value):
+        self._email = value
 
     @property
     def locale(self):
-        return self.locale
+        return self._locale
+    @locale.setter
+    def locale(self, value):
+        self._locale = value
 
     @property
     def last_login(self):
-        return self.last_login
+        return self._last_login
+    @last_login.setter
+    def last_login(self, value):
+        self._last_login = value
 
+    def __init__(self, objectData):
+        self.id = objectData.get('id')
+        self.name = objectData.get('name')
+        self.sortable_name = objectData.get('sortable_name')
+        self.short_name = objectData.get('short_name')
+        self.sis_user_id = objectData.get('sis_user_id')
+        self.sis_login_id = objectData.get('sis_login_id')
+        self.login_id = objectData.get('login_id')
+        self.avatar_url = objectData.get('avatar_url')
+        self.enrollments = objectData.get('enrollments')
+        self.email = objectData.get('email')
+        self.locale = objectData.get('locale')
+        self.last_login = objectData.get('last_login')
