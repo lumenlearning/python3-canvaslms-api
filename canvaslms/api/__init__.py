@@ -68,7 +68,46 @@ class CanvasAPI:
         # set API access clases to None
         self.courses = None
 
-    def callAPI(self, url):
+    def pages(self, url, absoluteUrl=False):
+        resp = self.callAPI(url, absoluteUrl)
+        
+        # always send back the first page of results
+        yield resp
+
+        checkMorePages = True
+        while checkMorePages:
+            # check for 'Link' header
+            linkHdr = None
+            for h in resp.headers.items():
+                if h[0] == 'Link':
+                    linkHdr = h
+                    break
+            else:
+                # if we didn't find one, stop
+                checkMorePages = False
+                raise StopIteration()
+
+            # if we DID find one ...
+            # search for a 'next' link
+            links = linkHdr[1].split(',')
+            for lnk in links:
+                parts = lnk.split(';')
+                if parts[1].find('next') >= 0:
+                    nextPageUrl = parts[0]
+                    nextPageUrl = nextPageUrl.replace('<', '')
+                    nextPageUrl = nextPageUrl.replace('>', '')
+                    nextPageUrl = nextPageUrl.strip()
+                    resp = self.callAPI(url=nextPageUrl, absoluteUrl=True)
+                    yield resp
+                    break
+            else:
+                # if we went through all of the links and didn't find a 'next' link ...
+                # stop looking
+                checkMorePages = False
+                raise StopIteration()
+
+
+    def callAPI(self, url, absoluteUrl=False):
         # pull together connection/API information
         server = self.defaultServer
         if server == None:
@@ -81,7 +120,12 @@ class CanvasAPI:
             raise ValueError('Property \'defaultVersion\' must be set prior to calling callAPI.')
 
         # put together the URL and make the request
-        urlstr = 'https://{}/api/{}/{}'.format(server, version, url)
+        if absoluteUrl:
+            urlstr = url
+        else:
+            urlstr = 'https://{}/api/{}/{}'.format(server, version, url)
+
+        #print('Attempting to retrieve {} ...'.format(urlstr))
         req = Request(url=urlstr, headers={'Authorization':' Bearer {}'.format(authToken)})
         return urlopen(req)
 
