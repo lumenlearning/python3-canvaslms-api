@@ -67,3 +67,16 @@ class Enrollment:
     def user(self):
         return self.user
 
+    def __init__(self, objectData):
+        self.id = objectData.get('id')
+        self.course_id = objectData.get('course_id')
+        self.course_section_id = objectData.get('course_section_id')
+        self.enrollment_state = objectData.get('enrollment_state')
+        self.limit_privileges_to_course_section = objectData.get('limit_privileges_to_course_section')
+        self.root_account_id = objectData.get('root_account_id')
+        self.type = objectData.get('type')
+        self.role = objectData.get('role')
+        self.user_id = objectData.get('user_id')
+        self.html_url = objectData.get('html_url')
+        self.grades = objectData.get('grades')
+        self.user = objectData.get('user')

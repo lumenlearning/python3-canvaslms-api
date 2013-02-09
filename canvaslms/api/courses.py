@@ -19,6 +19,7 @@
 
 
 from canvaslms.api.users import User
+from canvaslms.api.submissions import Submission
 import canvaslms.api
 
 class Courses:
@@ -62,7 +63,7 @@ class Courses:
         """\
 Arguments:
   * course_id
-  * enrollment_type
+  * enrollment_type: Optional. "teacher"|"student"|"ta"|"observer"|"designer" 
   * enrollment_role
   * include: Must be a list.  Possible values are: ['email', 'enrollments', 'locked', 'avatar_url']
   * user_id"""
@@ -90,16 +91,46 @@ Arguments:
 
 
         url_str = 'courses/{}/users?{}{}{}{}'.format(course_id, enrollment_type_str, enrollment_role_str, include_str, user_id_str)
-        print(url_str)
-        resp = self._connector.callAPI(url_str)
-        userList = canvaslms.api.getResponseBody(resp)
+#        print(url_str)
+
+        usersJSON = []
+        for pg in self._connector.pages(url_str):
+            userList = canvaslms.api.getResponseBody(pg)
+            usersJSON = usersJSON + userList
 
         # create Course objects from the results
         users = []
-        for usr in userList:
+        for usr in usersJSON:
             users.append(canvaslms.api.users.User(usr))
 
         return users
+
+    def getEnrollments(self, course_id, type=None, roll=None, state=None):
+        """\
+Arguments:
+  * course_id
+  * type: Optional list. 'StudentEnrollment'|'TeacherEnrollment'|'TaEnrollment'|'DesignerEnrollment'|'ObserverEnrollment'
+  * role: Optional list.
+  * state: Optional list. 'active'|'invited'|'creation_pending'|'deleted'|'rejected'|'completed'|'inactive'
+"""
+        pass
+
+    def getSubmissions(self, course_id, student_ids, assignment_ids=None, grouped=False, include=None):
+        # TODO: check student_id to see if it's a single value or a list. Handle it appropriately.
+        if self._connector == None:
+            raise ValueError('Property \'_connector\' must be specified prior to calling this function.')
+
+        student_ids_str = canvaslms.api.createGetArray('student_ids', student_ids)
+        include_str = '&include[]=total_scores'
+        param_str = '?per_page=1000{}{}'.format(student_ids_str, include_str)
+        submissionsJSON = self._connector.allPages('courses/{}/students/submissions{}'.format(course_id, param_str))
+
+        submissions = []
+        for sbms in submissionsJSON:
+            submissions.append(Submission(sbms))
+
+        return submissions
+
 
 class Course:
     'Class representing one course object as returned by the API'

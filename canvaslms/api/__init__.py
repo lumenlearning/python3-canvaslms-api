@@ -27,6 +27,27 @@ import re
 JSON_PATTERN = re.compile(r'application/json', re.I)
 CHARSET_PATTERN = re.compile(r'charset=(.+?)(;|$)')
 
+def getAuthTokenFromFile(authTokenFilePath):
+    # get the authorization token for connecting to the API
+    f = open(authTokenFilePath)
+    authToken = f.read()
+    authToken = authToken.strip()
+    f.close()
+
+    return authToken
+
+def getAttrFromList(objList, attr):
+    values = []
+    for o in objList:
+        values.append(getattr(o, attr))
+    return values
+
+def createGetArray(varName, values):
+    output = ''
+    for v in values:
+        output = output + '&{}[]={}'.format(varName, v)
+    return output
+
 class CanvasAPI:
     @property
     def defaultServer(self):
@@ -48,6 +69,14 @@ class CanvasAPI:
     @defaultVersion.setter
     def defaultVersion(self, value):
         self._defaultVersion = value
+    
+    @property
+    def defaultPerPage(self):
+        return self._defaultPerPage
+
+    @defaultPerPage.setter
+    def defaultPerPage(self, value):
+        self._defaultPerPage = value
 
     # API access classes
     @property
@@ -60,10 +89,11 @@ class CanvasAPI:
     def courses(self, value):
         self._courses = value
 
-    def __init__(self, defaultServer=None, defaultAuthToken=None, defaultVersion='v1'):
+    def __init__(self, defaultServer=None, defaultAuthToken=None, defaultVersion='v1', defaultPerPage=1000):
         self.defaultServer = defaultServer
         self.defaultAuthToken = defaultAuthToken
         self.defaultVersion = defaultVersion
+        self.defaultPerPage = defaultPerPage
 
         # set API access clases to None
         self.courses = None
@@ -106,6 +136,12 @@ class CanvasAPI:
                 checkMorePages = False
                 raise StopIteration()
 
+    def allPages(self, url, absoluteUrl=False):
+        collector = []
+        for pg in self.pages(url, absoluteUrl):
+            collector = collector + getResponseBody(pg)
+        return collector
+
 
     def callAPI(self, url, absoluteUrl=False):
         # pull together connection/API information
@@ -118,14 +154,18 @@ class CanvasAPI:
         version = self.defaultVersion
         if version == None:
             raise ValueError('Property \'defaultVersion\' must be set prior to calling callAPI.')
+        perPage = self.defaultPerPage
 
         # put together the URL and make the request
         if absoluteUrl:
             urlstr = url
         else:
-            urlstr = 'https://{}/api/{}/{}'.format(server, version, url)
+            if url.find('?') < 0:
+                urlstr = 'https://{}/api/{}/{}?per_page={}'.format(server, version, url, perPage)
+            else:
+                urlstr = 'https://{}/api/{}/{}&per_page={}'.format(server, version, url, perPage)
 
-        #print('Attempting to retrieve {} ...'.format(urlstr))
+#        print('Attempting to retrieve {} ...'.format(urlstr))
         req = Request(url=urlstr, headers={'Authorization':' Bearer {}'.format(authToken)})
         return urlopen(req)
 
