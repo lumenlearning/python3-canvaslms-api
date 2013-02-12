@@ -18,9 +18,8 @@
 ###############################################################################
 
 
-from canvaslms.api.users import User
-from canvaslms.api.submissions import Submission
 import canvaslms.api
+import canvaslms.api.util
 
 class Courses:
     'Class providing access to all course-related API endpoints.'
@@ -53,14 +52,16 @@ class Courses:
         courseList = canvaslms.api.getResponseBody(resp)
 
         # create Course objects from the results
-        courses = []
-        for crs in courseList:
-            courses.append(Course(crs))
+#        courses = []
+#        for crs in courseList:
+#            courses.append(Course(crs))
 
-        return courses
+        return courseList
 
     def getUsers(self, course_id, enrollment_type=None, enrollment_role=None, include=None, user_id=None):
         """\
+Get all user objects for this course.
+
 Arguments:
   * course_id
   * enrollment_type: Optional. "teacher"|"student"|"ta"|"observer"|"designer" 
@@ -93,142 +94,80 @@ Arguments:
         url_str = 'courses/{}/users?{}{}{}{}'.format(course_id, enrollment_type_str, enrollment_role_str, include_str, user_id_str)
 #        print(url_str)
 
-        usersJSON = []
-        for pg in self._connector.pages(url_str):
-            userList = canvaslms.api.getResponseBody(pg)
-            usersJSON = usersJSON + userList
+        objs = self._connector.allPages(url_str)
 
         # create Course objects from the results
-        users = []
-        for usr in usersJSON:
-            users.append(canvaslms.api.users.User(usr))
+#        users = []
+#        for usr in objs:
+#            users.append(canvaslms.api.users.User(usr))
 
-        return users
+        return objs
 
-    def getEnrollments(self, course_id, type=None, roll=None, state=None):
+    def getEnrollments(self, course_id, type=None, role=None, state=None):
         """\
+Get all enrollment objects for this course.
+
 Arguments:
   * course_id
   * type: Optional list. 'StudentEnrollment'|'TeacherEnrollment'|'TaEnrollment'|'DesignerEnrollment'|'ObserverEnrollment'
   * role: Optional list.
-  * state: Optional list. 'active'|'invited'|'creation_pending'|'deleted'|'rejected'|'completed'|'inactive'
+  * state: Optional list. 'active'|'invited'|'creation_pending'|'deleted'|'rejected'|'completed'|'inactive'.  Returns 'active' and 'invited' if no state parameter is given.
 """
-        pass
+        # TODO: handle 'type' argument
+        # TODO: handle 'role' argument
+        # TODO: handle 'state' argument
 
-    def getSubmissions(self, course_id, student_ids, assignment_ids=None, grouped=False, include=None):
-        # TODO: check student_id to see if it's a single value or a list. Handle it appropriately.
         if self._connector == None:
             raise ValueError('Property \'_connector\' must be specified prior to calling this function.')
 
-        student_ids_str = canvaslms.api.createGetArray('student_ids', student_ids)
+        param_str = '?per_page=1000'
+        objs = self._connector.allPages('courses/{}/enrollments{}'.format(course_id, param_str))
+
+#        enrollments = []
+#        for enrl in objs:
+#            enrollments.append(Enrollment(enrl))
+        return objs
+
+
+    def getSubmissions(self, course_id, student_ids, assignment_ids=None, grouped=False, include=None):
+        'Get all assignment submissions for this course'
+
+        # TODO: check student_id to see if it's a single value or a list. Handle it appropriately.
+        # TODO: handle the 'grouped' and 'include' parameters
+        if self._connector == None:
+            raise ValueError('Property \'_connector\' must be specified prior to calling this function.')
+
+        student_ids_str = None
+        if student_ids:
+            student_ids_str = canvaslms.api.util.createGetArray('student_ids', student_ids)
+
+        assignment_ids_str = None
+        if assignment_ids:
+            assignment_ids_str = canvaslms.api.util.createGetArray('assignment_ids', assignment_ids)
+        
         include_str = '&include[]=total_scores'
-        param_str = '?per_page=1000{}{}'.format(student_ids_str, include_str)
-        submissionsJSON = self._connector.allPages('courses/{}/students/submissions{}'.format(course_id, param_str))
+        param_str = '?per_page=1000{}{}{}'.format(student_ids_str, assignment_ids_str, include_str)
+        objs = self._connector.allPages('courses/{}/students/submissions{}'.format(course_id, param_str))
 
-        submissions = []
-        for sbms in submissionsJSON:
-            submissions.append(Submission(sbms))
+#        submissions = []
+#        for sbms in objs:
+#            submissions.append(Submission(sbms))
 
-        return submissions
+        return objs
 
+    def getAssignments(self, course_id):
+        'Get all assignment objects belonging to this course.'
 
-class Course:
-    'Class representing one course object as returned by the API'
+        if self._connector == None:
+            raise ValueError('Property \'_connector\' must be specified prior to calling this function.')
 
-    @property
-    def id(self):
-        return self._id
-    @id.setter
-    def id(self, value):
-        self._id = value
+        url_str = 'courses/{}/assignments'.format(course_id)
 
-    @property
-    def sis_course_id(self):
-        return self._sis_course_id
-    @sis_course_id.setter
-    def sis_course_id(self, value):
-        self._sis_course_id = value
+        objs = self._connector.allPages(url_str)
 
-    @property
-    def name(self):
-        return self._name
-    @name.setter
-    def name(self, value):
-        self._name = value
+        # create Course objects from the results
+#        assignments = []
+#        for asn in objs:
+#            assignments.append(canvaslms.api.assignments.Assignment(asn))
 
-    @property
-    def course_code(self):
-        return self._course_code
-    @course_code.setter
-    def course_code(self, value):
-        self._course_code = value
-
-    @property
-    def account_id(self):
-        return self._account_id
-    @account_id.setter
-    def account_id(self, value):
-        self._account_id = value
-
-    @property
-    def start_at(self):
-        return self._start_at
-    @start_at.setter
-    def start_at(self, value):
-        self._start_at = value
-
-    @property
-    def end_at(self):
-        return self._end_at
-    @end_at.setter
-    def end_at(self, value):
-        self._end_at = value
-
-    @property
-    def enrollments(self):
-        return self._enrollments
-    @enrollments.setter
-    def enrollments(self, value):
-        self._enrollments = value
-
-    @property
-    def calendar(self):
-        return self._calendar
-    @calendar.setter
-    def calendar(self, value):
-        self._calendar = value
-
-    @property
-    def syllabus_body(self):
-        return self._syllabus_body
-    @syllabus_body.setter
-    def syllabus_body(self, value):
-        self._syllabus_body = value
-
-    @property
-    def needs_grading_count(self):
-        return self._needs_grading_count
-    @needs_grading_count.setter
-    def needs_grading_count(self, value):
-        self._needs_grading_count = value
-
-    @property
-    def hide_final_grades(self):
-        return self._hide_final_grades
-    @hide_final_grades.setter
-    def hide_final_grades(self, value):
-        self._hide_final_grades = value
-
-    def __init__(self, objectData):
-        self.id = objectData.get('id')
-        self.sis_course_id = objectData.get('sis_course_id')
-        self.name = objectData.get('name')
-        self.course_code = objectData.get('course_code')
-        self.account_id = objectData.get('account_id')
-        self.start_at = objectData.get('start_at')
-        self.end_at = objectData.get('end_at')
-        self.enrollments = objectData.get('enrollments')
-        self.calendar = objectData.get('calendar')
-        self.syllabus_body = objectData.get('syllabus_body')
-        self.needs_grading_count = objectData.get('needs_grading_count')
-        self.hide_final_grades = objectData.get('hide_final_grades')
+        return objs
