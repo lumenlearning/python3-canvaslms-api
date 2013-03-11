@@ -18,6 +18,8 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
+from collections import OrderedDict
+
 def getUniqueValues(valueList):
     valueDict = dict()
     for v in valueList:
@@ -40,7 +42,7 @@ def createDictFromAttr(objList, attr):
 def getAttrFromList(objList, attr):
     values = []
     for o in objList:
-        if type(o) == dict:
+        if type(o) == dict or type(o) == OrderedDict:
             values.append(o.get(attr, None))
         else:
             values.append(getattr(o, attr))

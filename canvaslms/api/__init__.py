@@ -132,7 +132,7 @@ class CanvasAPI:
         return collector
 
 
-    def callAPI(self, url, absoluteUrl=False):
+    def callAPI(self, url, absoluteUrl=False, verbose=False):
         # pull together connection/API information
         server = self.defaultServer
         if server == None:
@@ -154,7 +154,9 @@ class CanvasAPI:
             else:
                 urlstr = 'https://{}/api/{}/{}&per_page={}'.format(server, version, url, perPage)
 
-        print('Attempting to retrieve {} ...'.format(urlstr))
+        if verbose:
+            print('Attempting to retrieve {} ...'.format(urlstr))
+
         req = Request(url=urlstr, headers={'Authorization':' Bearer {}'.format(authToken)})
         return urlopen(req)
 
