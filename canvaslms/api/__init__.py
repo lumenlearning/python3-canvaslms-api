@@ -22,6 +22,7 @@ import canvaslms.api.courses
 from urllib.request import Request, urlopen
 import json
 import re
+import collections
 
 # Some regexes for dealing with HTTP responses from API
 JSON_PATTERN = re.compile(r'application/json', re.I)
@@ -173,6 +174,6 @@ def getResponseBody(resp):
     respBody = respBody.decode(charset)
     
     if isJSON:
-        respBody = json.loads(respBody)
+        respBody = json.loads(respBody, object_pairs_hook=collections.OrderedDict)
         
     return respBody
