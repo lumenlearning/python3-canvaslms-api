@@ -87,8 +87,8 @@ class CanvasAPI:
         # set API access clases to None
         self.courses = None
 
-    def pages(self, url, absoluteUrl=False):
-        resp = self.callAPI(url, absoluteUrl)
+    def pages(self, url, absoluteUrl=False, verbose=False):
+        resp = self.callAPI(url, absoluteUrl, verbose)
         
         # always send back the first page of results
         yield resp
@@ -125,9 +125,9 @@ class CanvasAPI:
                 checkMorePages = False
                 raise StopIteration()
 
-    def allPages(self, url, absoluteUrl=False):
+    def allPages(self, url, absoluteUrl=False, verbose=False):
         collector = []
-        for pg in self.pages(url, absoluteUrl):
+        for pg in self.pages(url, absoluteUrl, verbose):
             collector = collector + getResponseBody(pg)
         return collector
 
