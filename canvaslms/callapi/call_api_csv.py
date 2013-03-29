@@ -23,6 +23,7 @@
 import collections
 import csv
 import io
+import json
 import sys
 
 import canvaslms.api as api
@@ -45,6 +46,19 @@ def call_api_csv(tokenFilePath, server, apiEndpoint):
     apiObj = api.CanvasAPI(defaultServer=server, defaultAuthToken=token)
 
     result = apiObj.allPages(apiEndpoint)
+
+    # Go through each dict object and look for arrays and dicts.
+    #   These are complex data types that are not really compatible with CSV
+    #   output format.  Change these types back into JSON so that if they
+    #   contain data the user is interested in, they can process the JSON
+    #   after the fact.
+    for d in result:
+        for k in d.keys():
+            if type(d[k]) == dict or type(d[k]) == collections.OrderedDict or type(d[k]) == list:
+                buf = io.StringIO()
+                json.dump(d[k], buf)
+                d[k] = buf.getvalue()
+
     if len(result) > 0:
         # allKeys is acting simply as an ordered set here.  Not all
         #   of the results have the same set of data, which means that
