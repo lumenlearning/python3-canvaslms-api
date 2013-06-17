@@ -128,7 +128,10 @@ class CanvasAPI:
     def allPages(self, url, absoluteUrl=False, verbose=False):
         collector = []
         for pg in self.pages(url, absoluteUrl, verbose):
-            collector = collector + getResponseBody(pg)
+            respBody = getResponseBody(pg)
+            if isinstance(respBody, collections.OrderedDict):
+                respBody = [respBody]
+            collector = collector + respBody
         return collector
 
 
