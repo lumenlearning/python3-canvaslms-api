@@ -23,6 +23,7 @@ import canvaslms.api.util
 
 class Courses:
     'Class providing access to all course-related API endpoints.'
+
     def __init__(self, connector):
         self._connector = connector
 
@@ -67,7 +68,8 @@ Arguments:
   * enrollment_type: Optional. "teacher"|"student"|"ta"|"observer"|"designer" 
   * enrollment_role
   * include: Must be a list.  Possible values are: ['email', 'enrollments', 'locked', 'avatar_url']
-  * user_id"""
+  * user_id
+"""
 
         # build enrollment_type string
         enrollment_type_str = ''

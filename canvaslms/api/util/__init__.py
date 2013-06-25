@@ -21,13 +21,38 @@
 from collections import OrderedDict
 
 def getUniqueValues(valueList):
+    """\
+Produce a set of unique values from a set of values with possible duplicates.
+
+Return: A list of unique values taken from valueList
+
+Parameters:
+  * valueList: A list of values to be de-duplicated.
+"""
+
+    # Using a dict as a filter for valueList.  Dictionary keys must be unique,
+    #   and this will help us eliminate duplicates in valueList.
     valueDict = dict()
+
+    # Doesn't matter what the values are.  Consequently, doesn't matter that
+    #   they potentially are overwritten.
     for v in valueList:
         valueDict[v] = 1
 
+    # Return the list of unique keys.
     return list(valueDict.keys())
 
 def createDictFromAttr(objList, attr):
+    """\
+Group the objects in objList based on their value for a specific attribute.
+
+Return: A dict where each key is one of the values attested for the attribute.  The value associated with each key is a list of objects whose value for attr was the same as the key.
+
+Parameters:
+  * objList: A list of objects, each having the attribute specified in attr.
+  * attr: A string indicating the attribute of interest.
+"""
+
     dct = dict()
     for o in objList:
         key = getattr(o, attr)
@@ -40,6 +65,16 @@ def createDictFromAttr(objList, attr):
     return dct
 
 def getAttrFromList(objList, attr):
+    """\
+Given a list of objects in objList, each having the attribute attr, return a list comprising the value of attr for each object in objList.
+
+Return: A list of values.
+
+Parameters:
+  * objList: The list of objects
+  * attr: The attribute had in common
+"""
+
     values = []
     for o in objList:
         if type(o) == dict or type(o) == OrderedDict:
@@ -49,6 +84,23 @@ def getAttrFromList(objList, attr):
     return values
 
 def createGetArray(varName, values):
+    """\
+Create a URL string to represent a named array of values for HTTP GET requests.
+
+Example:
+    urlArray = createGetArray('friends', ['Alice', 'Bob', 'Charlie', 'Drusilla'])
+    print(urlArray)
+
+Output:
+    &friends[]=Alice&friends[]=Bob&friends[]=Charlie&friends[]=Drusilla
+
+Return: The URL-encoded array string.
+
+Parameters:
+  * varName: The name of the array.
+  * values: A list of string values.
+"""
+
     output = ''
     for v in values:
         output = output + '&{}[]={}'.format(varName, v)
