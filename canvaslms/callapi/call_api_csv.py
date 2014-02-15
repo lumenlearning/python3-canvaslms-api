@@ -20,13 +20,10 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
-import collections
-import csv
-import io
-import json
 import sys
 
 import canvaslms.api as api
+import canvaslms.api.util as apiutil
 
 def main():
     """\
@@ -52,68 +49,13 @@ The program generates an absolute URL for the API call, calls it, converts the r
     server = sys.argv[2]
     apiEndpoint = sys.argv[3]
 
-    # Make the call to the API and print the results in CSV format to standard output.
-    csv = call_api_csv(tokenFilePath, server, apiEndpoint)
-    print(csv)
-
-def call_api_csv(tokenFilePath, server, apiEndpoint):
-    """\
-Call allPages with the appropriate parameters to get all results from the requested API call.  Convert these results to CSV format.  Return a string
-"""
-
+    # Make the call to the API and print the results in CSV format to
+    # standard output.
     token = api.getAuthTokenFromFile(tokenFilePath)
     apiObj = api.CanvasAPI(defaultServer=server, defaultAuthToken=token)
-    
-    result = apiObj.allPages(apiEndpoint)
-
-    # Go through each dict object and look for arrays and dicts.
-    #   These are complex data types that are not really compatible with CSV
-    #   output format.  Change these types back into JSON strings so that if
-    #   they contain data the user is interested in, they can process the JSON
-    #   after the fact.
-    for d in result:
-        for k in d.keys():
-            if type(d[k]) == dict or type(d[k]) == collections.OrderedDict or type(d[k]) == list:
-                # Create an in-memory file for json.dump to work with.
-                buf = io.StringIO()
-
-                # Convert the object to a JSON string.
-                json.dump(d[k], buf)
-
-                # Replace the original object with the JSON string.
-                d[k] = buf.getvalue()
-
-    if len(result) > 0:
-        # allKeys is acting simply as an ordered set here.  Not all
-        #   of the results have the same set of data, which means that
-        #   we need to look at the headers for ALL of the results instead
-        #   of only the first one.
-        allKeys = collections.OrderedDict()
-        for r in result:
-            ks = list(r.keys())
-            for k in ks:
-                allKeys[k] = 1
-
-        # The list of headers in the order that we first saw them.
-        headers = list(allKeys.keys())
-    else:
-        headers = []
-
-    # csv.DictWriter requires a file to write to.  Use an in-memory file.
-    buf = io.StringIO()
-
-    # Write out the objects in CSV format.
-    dw = csv.DictWriter(buf, headers)
-    dw.writeheader()
-    dw.writerows(result)
-
-    # Return the CSV data as a string
-    result = buf.getvalue()
-    buf.close()
-    return result
+    print(apiutil.toCSVString(apiObj.allPages(apiEndpoint)))
 
 def printUsage():
     print("Usage: api_call_csv.py 'path to OAuth token file' 'server' 'api endpoint'")
-
     
 if __name__ == '__main__': main()

@@ -18,6 +18,10 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
+import csv
+import io
+import json
+
 from collections import OrderedDict
 
 def getUniqueValues(valueList):
@@ -105,3 +109,65 @@ Parameters:
     for v in values:
         output = output + '&{}[]={}'.format(varName, v)
     return output
+
+
+def toCSVString(apiResult):
+    """\
+Take a result set from an API call and convert the objects to a
+CSV-formatted string.
+
+Example:
+    resultCSV = toCSVString(apiObj.allPages("/courses/123456/users?enrollment_type=student")
+    print(resultCSV)
+
+Return: The CSV-formatted string representation of the API call result.
+
+Parameters:
+  * apiResult: An array of dictionaries resulting from a call to allPages.
+"""
+    # Go through each dict object and look for arrays and dicts.
+    #   These are complex data types that are not really compatible with CSV
+    #   output format.  Change these types back into JSON strings so that if
+    #   they contain data the user is interested in, they can process the JSON
+    #   after the fact.
+    for d in apiResult:
+        for k in d.keys():
+            if type(d[k]) == dict or type(d[k]) == OrderedDict or type(d[k]) == list:
+                # Create an in-memory file for json.dump to work with.
+                buf = io.StringIO()
+
+                # Convert the object to a JSON string.
+                json.dump(d[k], buf)
+
+                # Replace the original object with the JSON string.
+                d[k] = buf.getvalue()
+
+    if len(apiResult) > 0:
+        # allKeys is acting simply as an ordered set here.  Not all
+        #   of the results have the same set of data, which means that
+        #   we need to look at the headers for ALL of the results instead
+        #   of only the first one.
+        allKeys = OrderedDict()
+        for r in apiResult:
+            ks = list(r.keys())
+            for k in ks:
+                allKeys[k] = 1
+
+        # The list of headers in the order that we first saw them.
+        headers = list(allKeys.keys())
+    else:
+        headers = []
+
+    # csv.DictWriter requires a file to write to.  Use an in-memory file.
+    buf = io.StringIO()
+
+    # Write out the objects in CSV format.
+    dw = csv.DictWriter(buf, headers)
+    dw.writeheader()
+    dw.writerows(apiResult)
+
+    # Return the CSV data as a string
+    csvResult = buf.getvalue()
+    buf.close()
+
+    return csvResult
