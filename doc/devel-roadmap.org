@@ -1,0 +1,26 @@
+* v0.2
+** Fix call_api_csv
+*** 5. Consider renaming the call_api_csv module
+*** 6. The whole module probably needs to be rewritten
+*** 9. Rename canvaslms/callapi to canvaslms/bin
+*** 11. call_api_csv.py becomes just callapi.py
+*** 7. CSV conversion code should be put into its own function
+
+* v0.3
+** New functionality
+*** 2. create an nPages function
+*** 12. create an nResults function
+
+* v0.4
+** Testing
+*** 13. Add unit tests for all previous functionality.
+** Documentation
+*** 3. canvaslms/api/courses.py
+*** 10. Reformat all comments to be less than 80 chars per line
+
+* v0.5
+** New functionality
+*** 8. Redo implementation of the courses API
+*** 4. examples for canvaslms/api/courses.py
+
+
