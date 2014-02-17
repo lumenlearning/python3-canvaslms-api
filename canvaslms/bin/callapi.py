@@ -50,21 +50,16 @@ The program generates an absolute URL for the API call, calls it, converts the r
     if config_path != None:
         config = configutil.updatedict(config, configutil.readconfigfile(config_path))
 
-    # If the user didn't provide any command line arguments, print usage.
-    if len(sys.argv) == 1:
-        printUsage()
-        return
-    
-    # Pull the command line arguments into variables.
-    tokenFilePath = sys.argv[1]
-    server = sys.argv[2]
-    apiEndpoint = sys.argv[3]
+    # Get the required configuration values from the configuration object
+    tokenFilePath = configutil.get_required_config_value(config, 'TokenPath')
+    server = configutil.get_required_config_value(config, 'CanvasHost')
+    apiCall = configutil.get_required_config_value(config, 'APICall')
 
     # Make the call to the API and print the results in CSV format to
     # standard output.
     token = api.getAuthTokenFromFile(tokenFilePath)
     apiObj = api.CanvasAPI(defaultServer=server, defaultAuthToken=token)
-    print(apiutil.toCSVString(apiObj.allPages(apiEndpoint)))
+    print(apiutil.toCSVString(apiObj.allPages(apiCall)))
 
 def printUsage():
     print("Usage: api_call_csv.py 'path to OAuth token file' 'server' 'api endpoint'")
