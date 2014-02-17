@@ -20,6 +20,7 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
+import os
 import sys
 
 import canvaslms.api as api
@@ -40,7 +41,14 @@ The arguments are not named.  Order is important.
 The program generates an absolute URL for the API call, calls it, converts the results to CSV format, and prints the CSV to standard output.
 """
 
-    
+    # Start out with a blank configuration dict
+    config = {}
+
+    # Check for CANVASLMS_API_CONFIG_PATH environment variable
+    # If found, try to read a configuration dict from the path given.
+    config_path = os.getenv("CANVASLMS_API_CONFIG_PATH")
+    if config_path != None:
+        config = configutil.updatedict(config, configutil.readconfigfile(config_path))
 
     # If the user didn't provide any command line arguments, print usage.
     if len(sys.argv) == 1:
