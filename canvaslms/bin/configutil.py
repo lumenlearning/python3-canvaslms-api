@@ -26,6 +26,7 @@ class Error(Exception):
 
 class InvalidJSONError(Error):
     """Raised when the JSON interpreter could not decode the file."""
+
     def __init__(self, message):
         self.message = message
     def __str__(self):
@@ -33,17 +34,20 @@ class InvalidJSONError(Error):
 
 class InvalidConfigurationError(Error):
     """Raised when the JSON in the file is not exactly one map object."""
+
     def __init__(self, message):
         self.message = message
     def __str__(self):
         return(repr(self.message))
 
 def readconfig(config_str):
-    """Attempt to read a configuration dict from config_str.
+    """Attempt to read a configuration dict from config_str. The function
+either returns a dict object on success, or throws an exception on failure.
 
     Arguments:
         config_str -- a string containing a map/dict object in JSON format.
-    """
+"""
+
     # check if config_str contains properly formatted JSON
     try:
         config = json.loads(config_str)
@@ -59,10 +63,13 @@ def readconfig(config_str):
 
 def readconfigfile(path):
     """Attempt to read in a configuration dict object from the file at path.
-    
+The function either returns a dict object on success, or throws an exception
+on failure.
+
     Arguments:
         path -- a string containing the path to a configuration file.
-    """
+"""
+
     # Read in the contents of path
     f = open(path, 'r')
     config_str = f.read()
@@ -70,3 +77,19 @@ def readconfigfile(path):
 
     # Get the configuration object
     return readconfig(config_str)
+
+def updatedict(current_dict, new_dict):
+    """Update the contents of current_dict with the contents of new_dict using the
+following rules:
+ - For keys that exist only in current_dict, current_dict retains the
+   current values.
+ - For keys that exist only in new_dict, current_dict receives the values
+   from new_dict.
+ - For keys that exist in both current_dict and new_dict, current_dict receives
+   the values from new_dict.
+"""
+    
+    for key in new_dict:
+        current_dict[key] = new_dict[key]
+
+    return current_dict

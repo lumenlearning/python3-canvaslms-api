@@ -24,6 +24,7 @@ import sys
 
 import canvaslms.api as api
 import canvaslms.api.util as apiutil
+import canvaslms.bin.configutil as configutil
 
 def main():
     """\
@@ -38,6 +39,8 @@ The arguments are not named.  Order is important.
 
 The program generates an absolute URL for the API call, calls it, converts the results to CSV format, and prints the CSV to standard output.
 """
+
+    
 
     # If the user didn't provide any command line arguments, print usage.
     if len(sys.argv) == 1:
