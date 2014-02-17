@@ -40,6 +40,24 @@ class InvalidConfigurationError(Error):
     def __str__(self):
         return(repr(self.message))
 
+class MissingConfigurationValueError(Error):
+    """Raised when a mandatory configuration value is not specified in the
+configuration object.
+
+Attributes:
+    key -- A string indicating the case-sensitive name of the required value
+that was not found.
+    message -- A string giving the exception message.
+"""
+    
+    def __init__(self, key):
+        self.key = key
+        self.message = "Could not find a value for {} in the given configuration object.".format(key)
+
+    def __str__(self):
+        return(repr([self.key, self.message]))
+
+
 def readconfig(config_str):
     """Attempt to read a configuration dict from config_str. The function
 either returns a dict object on success, or throws an exception on failure.
@@ -93,3 +111,26 @@ following rules:
         current_dict[key] = new_dict[key]
 
     return current_dict
+
+def get_required_config_value(config, key):
+    """Retrieve key from config.  If key does not exist in config, throw
+an exception.
+
+Arguments:
+    config -- A dict containing the configuration values.
+    key -- A string giving the key for the desired configuration value.
+"""
+    value = get_config_value(config, key)
+    if value == None:
+        raise MissingConfigurationValueError(key)
+
+    return value
+
+def get_config_value(config, key):
+    """Retrieve key from config.  If key does not exist in config, return None.
+
+Arguments:
+    config -- A dict containing the configuration values.
+    key -- A string giving the key for the desired configuration value.
+"""
+    return config.get(key, None)
