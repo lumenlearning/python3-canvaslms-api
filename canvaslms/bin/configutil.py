@@ -70,7 +70,7 @@ either returns a dict object on success, or throws an exception on failure.
     try:
         config = json.loads(config_str)
     except ValueError as ve:
-        raise InvalidJSONError("The following string does not contain properly formatted JSON:\n\t{}\n\t{}".format(config_str, ve.message))
+        raise InvalidJSONError("The following string does not contain properly formatted JSON:\n\t{}\n\t{}".format(config_str, ve))
     
     # check if JSON data contains exactly one map object
     if type(config) != dict:
@@ -108,7 +108,8 @@ following rules:
 """
     
     for key in new_dict:
-        current_dict[key] = new_dict[key]
+        if new_dict[key] != None:
+            current_dict[key] = new_dict[key]
 
     return current_dict
 

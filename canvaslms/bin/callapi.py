@@ -20,6 +20,7 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
+import optparse
 import os
 import sys
 
@@ -29,26 +30,61 @@ import canvaslms.bin.configutil as configutil
 
 def main():
     """\
-This main function for this module allows it to be run from the command line with the following invocation:
+    This script makes the specified call to the Canvas API, returning the result
+    to standard output in CSV format.  The main function for this module allows
+    it to be run from the command line with the following invocation:
+    
+        python3 -m canvaslms.bin.callapi -T TOKENFILE -H HOST APICALL
 
-  python3.2 -m canvaslms.callapi.call_api_csv {tokenFilePath} {server} {apiEndpoint}
+    where TOKENFILE, HOST, AND APICALL are the following:
+     - TOKENFILE: path to the file containing the authentication token
+       to be used for communicating with the API.
+        - "/home/superdevel/some_project/tokenfile"
+     - HOST: name of the server running Canvas
+        - "canvas.instructure.com"
+     - APICALL: the actuall call to make to the API
+        - "courses/123456/users?enrollment_type=student"
 
-The arguments are not named.  Order is important.
-  1. The relative or absolute path of the file containing the authentication token.
-  2. The server running the instance of Canvas.  (e.g., "myinstitution.instructure.com")
-  3. The API endpoint to call.  (e.g., "courses/123456/assignments")
+    Of course, if an appropriate configuration file has been provided containing
+    the authentication token file path and the Canvas host name, you can run the
+    script simply as:
 
-The program generates an absolute URL for the API call, calls it, converts the results to CSV format, and prints the CSV to standard output.
-"""
+        python3 -m canvaslms.bin.callapi APICALL
+    """
 
-    # Start out with a blank configuration dict
+    # 0. Start out with an empty configuration dict
     config = {}
 
-    # Check for CANVASLMS_API_CONFIG_PATH environment variable
+    # 1. Check CANVASLMS_API_CONFIG_PATH environment variable
     # If found, try to read a configuration dict from the path given.
     config_path = os.getenv("CANVASLMS_API_CONFIG_PATH")
     if config_path != None:
+        # TODO: Instead of just dying here, print a warning to
+        # standard error if the specified file doesn't exist.
         config = configutil.updatedict(config, configutil.readconfigfile(config_path))
+
+    # 2. Check for CANVASLMS_API_CONFIG file in the current working directory
+    if os.path.isfile("CANVASLMS_API_CONFIG"):
+        config = configutil.updatedict(config, configutil.readconfigfile("CANVASLMS_API_CONFIG"))
+
+    # Parse command line options
+    parser = optparse.OptionParser()
+    parser.add_option("-C", "--config-path", dest="ConfigPath")
+    parser.add_option("-H", "--host", dest="CanvasHost")
+    parser.add_option("-T", "--token-path", dest="TokenPath")
+    (options, args) = parser.parse_args()
+
+    # 3. Check for a --config argument
+    if options.ConfigPath != None:
+        # TODO: We do actually want to die here.  If the user
+        # explicitly specified a path to a config file and the file
+        # doesn't exist, we should throw an exception.
+        config = configutil.updatedict(config, configutil.readconfigfile(options.ConfigPath))
+
+    # 4. Update config with command line options and arguments
+    config = configutil.updatedict(config, options.__dict__)
+    if len(args) == 1:
+        config['APICall'] = args[0]
 
     # Get the required configuration values from the configuration object
     tokenFilePath = configutil.get_required_config_value(config, 'TokenPath')
@@ -61,7 +97,4 @@ The program generates an absolute URL for the API call, calls it, converts the r
     apiObj = api.CanvasAPI(defaultServer=server, defaultAuthToken=token)
     print(apiutil.toCSVString(apiObj.allPages(apiCall)))
 
-def printUsage():
-    print("Usage: api_call_csv.py 'path to OAuth token file' 'server' 'api endpoint'")
-    
 if __name__ == '__main__': main()
