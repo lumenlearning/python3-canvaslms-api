@@ -21,11 +21,15 @@
 import json
 
 class Error(Exception):
-    """Base class for exceptions in this module."""
+    """
+    Base class for exceptions in this module.
+    """
     pass
 
 class InvalidJSONError(Error):
-    """Raised when the JSON interpreter could not decode the file."""
+    """
+    Raised when the JSON interpreter could not decode the file.
+    """
 
     def __init__(self, message):
         self.message = message
@@ -33,7 +37,9 @@ class InvalidJSONError(Error):
         return(repr(self.message))
 
 class InvalidConfigurationError(Error):
-    """Raised when the JSON in the file is not exactly one map object."""
+    """
+    Raised when the JSON in the file is not exactly one map object.
+    """
 
     def __init__(self, message):
         self.message = message
@@ -41,14 +47,15 @@ class InvalidConfigurationError(Error):
         return(repr(self.message))
 
 class MissingConfigurationValueError(Error):
-    """Raised when a mandatory configuration value is not specified in the
-configuration object.
+    """
+    Raised when a mandatory configuration value is not specified in the
+    configuration object.
 
-Attributes:
-    key -- A string indicating the case-sensitive name of the required value
-that was not found.
-    message -- A string giving the exception message.
-"""
+    Attributes:
+     - key: A string indicating the case-sensitive name of the required value
+        that was not found.
+     - message: A string giving the exception message.
+    """
     
     def __init__(self, key):
         self.key = key
@@ -59,12 +66,13 @@ that was not found.
 
 
 def readconfig(config_str):
-    """Attempt to read a configuration dict from config_str. The function
-either returns a dict object on success, or throws an exception on failure.
+    """
+    Attempt to read a configuration dict from config_str. The function
+    either returns a dict object on success, or throws an exception on failure.
 
     Arguments:
-        config_str -- a string containing a map/dict object in JSON format.
-"""
+     - config_str: a string containing a map/dict object in JSON format.
+    """
 
     # check if config_str contains properly formatted JSON
     try:
@@ -80,13 +88,14 @@ either returns a dict object on success, or throws an exception on failure.
     return config
 
 def readconfigfile(path):
-    """Attempt to read in a configuration dict object from the file at path.
-The function either returns a dict object on success, or throws an exception
-on failure.
+    """
+    Attempt to read in a configuration dict object from the file at path.
+    The function either returns a dict object on success, or throws an exception
+    on failure.
 
     Arguments:
-        path -- a string containing the path to a configuration file.
-"""
+     - path: a string containing the path to a configuration file.
+    """
 
     # Read in the contents of path
     f = open(path, 'r')
@@ -97,15 +106,24 @@ on failure.
     return readconfig(config_str)
 
 def updatedict(current_dict, new_dict):
-    """Update the contents of current_dict with the contents of new_dict using the
-following rules:
- - For keys that exist only in current_dict, current_dict retains the
-   current values.
- - For keys that exist only in new_dict, current_dict receives the values
-   from new_dict.
- - For keys that exist in both current_dict and new_dict, current_dict receives
-   the values from new_dict.
-"""
+    """
+    Update the contents of current_dict with the contents of new_dict using the
+    following rules:
+     - For keys that exist only in current_dict, current_dict retains the
+       current values.
+     - For keys that exist only in new_dict, current_dict receives the values
+       from new_dict.
+     - For keys that exist in both current_dict and new_dict, current_dict
+       receives the values from new_dict.
+
+    However, values from new_dict are used to update current_dict ONLY when the
+    new_dict value is not None.  This allows us to use an optparse.Values class
+    to update current_dict.
+
+    Arguments:
+     - current_dict: the dictionary to be updated
+     - new_dict: the dictionary containing the new values
+    """
     
     for key in new_dict:
         if new_dict[key] != None:
@@ -114,13 +132,15 @@ following rules:
     return current_dict
 
 def get_required_config_value(config, key):
-    """Retrieve key from config.  If key does not exist in config, throw
-an exception.
+    """
+    Retrieve key from config.  If key does not exist in config, throw
+    an exception.
 
-Arguments:
-    config -- A dict containing the configuration values.
-    key -- A string giving the key for the desired configuration value.
-"""
+    Arguments:
+     - config: a dict containing the configuration values.
+     - key: a string giving the key for the desired configuration value.
+    """
+
     value = get_config_value(config, key)
     if value == None:
         raise MissingConfigurationValueError(key)
@@ -128,10 +148,12 @@ Arguments:
     return value
 
 def get_config_value(config, key):
-    """Retrieve key from config.  If key does not exist in config, return None.
+    """
+    Retrieve key from config.  If key does not exist in config, return None.
 
-Arguments:
-    config -- A dict containing the configuration values.
-    key -- A string giving the key for the desired configuration value.
-"""
+    Arguments:
+     - config: A dict containing the configuration values.
+     - key: A string giving the key for the desired configuration value.
+    """
+
     return config.get(key, None)
