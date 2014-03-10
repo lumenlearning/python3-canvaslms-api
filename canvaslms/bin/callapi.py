@@ -21,6 +21,7 @@
 ###############################################################################
 
 import getpass
+import json
 import optparse
 import os
 import sys
@@ -74,6 +75,7 @@ def main():
     parser.add_option("-H", "--host", dest="CanvasHost")
     parser.add_option("-T", "--token-path", dest="TokenPath")
     parser.add_option('-A', "--get-auth-token", dest='GetAuthToken', default=False, action='store_true')
+    parser.add_option('-V', '--csv-output', dest='CSVOutput', default=False, action='store_true')
     (options, args) = parser.parse_args()
 
     # 3. Check for a --config argument
@@ -99,9 +101,14 @@ def main():
     else:
         token = api.getAuthTokenFromFile(tokenFilePath)
 
-    # Make the call to the API and print the results in CSV format to
-    # standard output.
+    # Make the call to the API and print the results to stdout.
+    # Default output format is JSON (same as the API), but CSV output
+    # is available with the -V command line option.
     apiObj = api.CanvasAPI(defaultServer=server, defaultAuthToken=token)
-    print(apiutil.toCSVString(apiObj.allPages(apiCall)))
+    results = apiObj.allPages(apiCall)
+    if options.CSVOutput == True:
+        print(apiutil.toCSVString(results))
+    else:
+        print(json.dumps(results, indent=4, separators=(',', ': ')))
 
 if __name__ == '__main__': main()
