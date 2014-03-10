@@ -20,6 +20,7 @@
 # along with python3-canvaslms-api. If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
+import getpass
 import optparse
 import os
 import sys
@@ -72,6 +73,7 @@ def main():
     parser.add_option("-C", "--config-path", dest="ConfigPath")
     parser.add_option("-H", "--host", dest="CanvasHost")
     parser.add_option("-T", "--token-path", dest="TokenPath")
+    parser.add_option('-A', "--get-auth-token", dest='GetAuthToken', default=False, action='store_true')
     (options, args) = parser.parse_args()
 
     # 3. Check for a --config argument
@@ -91,9 +93,14 @@ def main():
     server = configutil.get_required_config_value(config, 'CanvasHost')
     apiCall = configutil.get_required_config_value(config, 'APICall')
 
+    # Get our auth token, either from the terminal or from a file.
+    if options.GetAuthToken == True:
+        token = getpass.getpass('Auth Token: ')
+    else:
+        token = api.getAuthTokenFromFile(tokenFilePath)
+
     # Make the call to the API and print the results in CSV format to
     # standard output.
-    token = api.getAuthTokenFromFile(tokenFilePath)
     apiObj = api.CanvasAPI(defaultServer=server, defaultAuthToken=token)
     print(apiutil.toCSVString(apiObj.allPages(apiCall)))
 
